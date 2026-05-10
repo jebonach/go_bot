@@ -399,15 +399,15 @@ Behavior:
 1. Only owner may use the command, **and only from the private chat with the bot**. Both `Chat.ID == OwnerChatID` AND `From.ID == OwnerChatID` are required. This blocks `/send` from groups where `From.ID` happens to match the owner.
 2. Recipients are normalized to lowercase username keys.
 3. Repository looks up targets via `FindLatestChatTargetByUsername` (lowercased input is used against the indexed `source_username_lc` column — no `TRIM`/`LOWER` in WHERE).
-4. Repository validates the target's `business_connection_id` via `GetBusinessConnection`.
-5. Send is performed through `SendBusinessMessage` only when the connection is known, `is_enabled=true`, and `can_reply=true`.
+4. Repository validates the target's `business_connection_id` via `GetBusinessConnection` when a registry row exists.
+5. Send is performed through `SendBusinessMessage` when the connection is unknown, or when it is known with `is_enabled=true` and `can_reply=true`.
 6. Owner receives success/unknown/failed summary.
 
 Critical invariant:
 
 - `/send` requires `business_targets`.
-- `/send` also requires an active `business_connections` row with `can_reply=true`.
-- Outgoing `/send` is fail-closed: unknown, disabled, or `can_reply=false` connections are reported as failed recipients and must not call Telegram `SendBusinessMessage`.
+- `/send` must block known disabled or `can_reply=false` connections.
+- `/send` must not block an unknown `business_connections` row if `business_targets` has a stored `business_connection_id`; this handles already-linked Business accounts where Telegram has not delivered a `business_connection` update yet.
 - Do not make `/send` depend on message retention rows.
 - Do not relax the private-chat check.
 

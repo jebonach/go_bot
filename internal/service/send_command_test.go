@@ -379,7 +379,7 @@ func TestHandleOwnerCommand_SendBlocksNoReplyConnection(t *testing.T) {
 	}
 }
 
-func TestHandleOwnerCommand_SendBlocksUnknownConnection(t *testing.T) {
+func TestHandleOwnerCommand_SendAllowsUnknownConnection(t *testing.T) {
 	logger := newTestLogger(t)
 	sendBusinessCalls := 0
 	var summary string
@@ -416,11 +416,11 @@ func TestHandleOwnerCommand_SendBlocksUnknownConnection(t *testing.T) {
 	if !handled {
 		t.Fatalf("expected /send command to be handled")
 	}
-	if sendBusinessCalls != 0 {
-		t.Fatalf("unknown connection must block business send, got %d calls", sendBusinessCalls)
+	if sendBusinessCalls != 1 {
+		t.Fatalf("unknown connection should still try business send, got %d calls", sendBusinessCalls)
 	}
-	if !strings.Contains(summary, "business connection is unknown") {
-		t.Fatalf("expected unknown connection reason, got %q", summary)
+	if !strings.Contains(summary, "Success: @alice") {
+		t.Fatalf("expected successful send summary, got %q", summary)
 	}
 }
 

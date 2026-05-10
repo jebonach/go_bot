@@ -110,9 +110,10 @@ SQLite не хранит:
 1. Проверяет, что сообщение пришло из приватного чата с владельцем (`message.Chat.ID == OWNER_CHAT_ID` И `message.From.ID == OWNER_CHAT_ID`). Запросы из групп блокируются, даже если отправитель — владелец.
 2. Нормализует username получателей (нижний регистр).
 3. Ищет business target mapping в SQLite.
-4. Проверяет `business_connections`: коннекция должна быть известна, `is_enabled=true` и `can_reply=true`.
-5. Отправляет business message найденным пользователям только через активные коннекции с правом ответа.
-6. Возвращает summary: success, unknown, failed. Если коннекция отключена, неизвестна или без `can_reply`, получатель попадает в failed с конкретной причиной.
+4. Если `business_connections` уже знает эту коннекцию, проверяет `is_enabled=true` и `can_reply=true`.
+5. Если записи в `business_connections` еще нет, бот не блокирует отправку: target mapping уже содержит `business_connection_id`, поэтому бот пробует отправить сообщение и отдает решение Telegram API.
+6. Отправляет business message найденным пользователям через сохраненный `business_connection_id`.
+7. Возвращает summary: success, unknown, failed. Если коннекция явно отключена или без `can_reply`, получатель попадает в failed с конкретной причиной.
 
 Пользователь должен хотя бы раз написать в business-чат, чтобы бот узнал его target chat id и `business_connection_id`.
 

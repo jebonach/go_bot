@@ -193,7 +193,8 @@ func (s *BusinessMessageService) validateBusinessSendConnection(ctx context.Cont
 		return "business connection lookup failed: " + summarizeCommandError(err)
 	}
 	if connection == nil {
-		return "business connection is unknown; reconnect the bot or wait for a business_connection update"
+		s.logger.Warnf("business send connection is not in registry business_connection_id=%s; attempting send using stored target mapping", businessConnectionID)
+		return ""
 	}
 	if !connection.IsEnabled {
 		return "business connection is disabled"
